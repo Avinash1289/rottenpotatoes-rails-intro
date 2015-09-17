@@ -1,6 +1,8 @@
 class MoviesController < ApplicationController
 helper_method :sort_selected
 
+  def sort_selected
+  end
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
@@ -43,8 +45,5 @@ helper_method :sort_selected
     redirect_to movies_path
   end
 
-  def sort_selected
-    @movies = Movie.order(params[:sort]).all
-  end
 
 end
