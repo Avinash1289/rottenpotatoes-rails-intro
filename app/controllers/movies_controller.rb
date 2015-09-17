@@ -1,4 +1,5 @@
 class MoviesController < ApplicationController
+helper_method :sort_selected
 
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
@@ -40,6 +41,10 @@ class MoviesController < ApplicationController
     @movie.destroy
     flash[:notice] = "Movie '#{@movie.title}' deleted."
     redirect_to movies_path
+  end
+
+  def sort_selected
+    @movies = Movie.order(params[:sort]).all
   end
 
 end
