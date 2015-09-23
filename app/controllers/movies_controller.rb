@@ -12,15 +12,41 @@ helper_method :sort_selected
   end
 
   def index
-    val = params[:sort].to_s
-    if (val == "title")
-      @movies = Movie.order(:title)
-      @title_header = "hilite"
-    elsif (val == "release_date")
-      @movies = Movie.order(:release_date)
-      @release_date_header = "hilite"
+    @all_ratings = Movie.all_ratings
+
+    if (params[:ratings])
+      @selected_ratings = params[:ratings].keys
     else
-      @movies = Movie.all
+      @selected_ratings = @all_ratings
+    end
+    
+    val = params[:sort].to_s
+
+    if (val == "title")
+      if (params[:ratings])
+        @movies = Movie.where(:rating => @selected_ratings).order(:title)
+        @selected_ratings = params[:ratings].keys
+      else
+        @movies = Movie.order(:title)
+      end
+      @title_header = "hilite"
+
+    elsif (val == "release_date")
+      if (params[:ratinfs])
+        @movies = Movie.where(:rating => @selected_ratings).order(:title)
+        @selected_ratings = params[:ratings].keys
+      else
+        @movies = Movie.order(:release_date)
+      end
+      @release_date_header = "hilite"
+
+    else
+      if (params[:ratings])
+        @movies = Movie.where(:rating => @selected_ratings)
+      else
+        @movies = Movie.all
+        @selected_ratings = Movie.all_ratings
+      end
     end
   end
 
