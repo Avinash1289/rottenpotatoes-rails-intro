@@ -1,6 +1,4 @@
 class MoviesController < ApplicationController
-helper_method :sort_selected
-
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
@@ -12,79 +10,40 @@ helper_method :sort_selected
   end
 
   def index
-  @all_ratings = Movie.all_ratings
+    @all_ratings = Movie.all_ratings
 
-  if (params[:ratings])
-    @checked = params[:ratings].keys
-  elsif (session[:ratings])
-    @checked = session[:ratings].keys
-  else
-    @checked = @all_ratings
-  end
+    if (params[:ratings])
+      @checked = params[:ratings].keys
+      session[:ratings] = params[:ratings]
+    elsif (session[:ratings])
+      flag = 1
+      @checked = session[:ratings].keys
+    else
+      @checked = @all_ratings
+    end
   
-  val = params[:sort].to_s
-
-  if ((val == "title" ) || (session[:sort]=="title" && val!="release_date"))
-    if (params[:ratings])
-      @movies = Movie.where(:rating => @checked).order(:title)
-      session[:ratings] = params[:ratings]
-      @checked = params[:ratings].keys
-      if(session[:sort]=="title" && val!="title")
-        redirect_to movies_path(:sort => session[:sort],:ratings => params[:ratings])
-      end
-    elsif (session[:ratings])
-      @movies = Movie.where(:rating => @checked).order(:title)
-      if(session[:sort]=="title")
-        redirect_to movies_path(:sort => session[:sort],:ratings => session[:ratings])
-      else
-        redirect_to movies_path(:sort => params[:sort],:ratings => session[:ratings])
-      end  
+    if (params[:sort])
+      @sort_method = params[:sort] 
+      session[:sort] = params[:sort]
+    elsif (session[:sort])
+      flag = 1
+      @sort_method = session[:sort]
     else
-      @movies = Movie.order(:title)
-      if (session[:sort] && val!="title")
-        redirect_to movies_path(:sort => "title")
-      end 
+      @sort_method = nil
+    end 
+
+    if (@sort_method.to_s == "title")
+      @title_header = "hilite"
+    elsif (@sort_method.to_s == "release_date")
+      @release_date_header = "hilite"
     end
-    @title_header = "hilite"
-    session[:sort] = "title"
     
-  elsif ((val == "release_date" ) || (session[:sort]=="release_date" && val!="title"))
-    if (params[:ratings])
-      @movies = Movie.where(:rating => @checked).order(:release_date)
-      session[:ratings] = params[:ratings]
-      @checked = params[:ratings].keys
-      if(session[:sort]=="release_date" && val!="release_date")
-        redirect_to movies_path(:sort => session[:sort],:ratings => params[:ratings])
-      end
-    elsif (session[:ratings])
-      @movies = Movie.where(:rating => @checked).order(:release_date)
-      if(session[:sort]=="release_date")
-        redirect_to movies_path(:sort => session[:sort],:ratings => session[:ratings])
-      else
-      redirect_to movies_path(:sort => params[:sort],:ratings => session[:ratings])
-      end
-    else
-      @movies = Movie.order(:release_date)
-      if (session[:sort] && val!="release_date")
-        redirect_to movies_path(:sort => "release_date")
-      end 
+    if flag == 1
+      redirect_to movies_path(:ratings => session[:ratings], :sort => session[:sort])
     end
-    @release_date_header = "hilite"
-    session[:sort] = "release_date"
-
-  else
-    if (params[:ratings])
-      @movies = Movie.where(:rating => @checked)
-      session[:ratings] = params[:ratings]
-    elsif (session[:ratings])
-      @movies = Movie.where(:rating => @checked)
-      redirect_to movies_path(:ratings => session[:ratings])
-    else
-      @movies = Movie.all
-      @checked = Movie.all_ratings
-    end
+    
+    @movies = Movie.where(:rating => @checked).order(@sort_method)
   end
-end
 
 def new
     # default: render 'new' template
